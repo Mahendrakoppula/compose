@@ -38,7 +38,7 @@ public class AccountController {
         return ResponseEntity.ok(accountDTO);
     }
 
-    @PutMapping("/{id}/withdraw")
+    @PutMapping("/{id}/withdaw")
     public ResponseEntity<AccountDTO> withDrawAmount(@PathVariable Long id, @RequestBody Map<String,Double> request){
         double amount = request.get("amount");
         AccountDTO accountDTO = accountservice.withdraw(id,amount);
