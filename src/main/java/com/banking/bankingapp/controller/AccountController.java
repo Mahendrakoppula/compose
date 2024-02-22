@@ -26,29 +26,29 @@ public class AccountController {
         this.accountservice=accountservice ;
     }
 
-//    @PostMapping
-//    public ResponseEntity<String> createAccounts(@RequestBody List<AccountDTO> accountDTOs) {
-////        if (accountDTOs == null || accountDTOs.isEmpty()) {
-////            return new ResponseEntity<>("No accounts provided in the request body", HttpStatus.BAD_REQUEST);
-////        }
-//
-//        try {
-//            if (accountDTOs.size() == 1) {
-//                // Single account: use addAccount for efficiency
-//                AccountDTO accountDTO = accountDTOs.get(0);
-//                System.out.println(accountDTO);
-//                AccountDTO createdAccount = accountservice.createAccount(accountDTO);
-//                return new ResponseEntity<>("createdAccount", HttpStatus.CREATED);
-//            } else {
-//                // Multiple accounts: use asynchronous processing for scalability
-//                executorService.execute(() -> accountservice.createAccounts(accountDTOs));
-//                return new ResponseEntity<>("Accounts created asynchronously...", HttpStatus.ACCEPTED);
-//            }
-//        } catch (Exception e) {
-//            // Handle exceptions gracefully
-//            return new ResponseEntity<>("Error processing accounts: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    @PostMapping
+    public ResponseEntity<String> createAccounts(@RequestBody List<AccountDTO> accountDTOs) {
+//        if (accountDTOs == null || accountDTOs.isEmpty()) {
+//            return new ResponseEntity<>("No accounts provided in the request body", HttpStatus.BAD_REQUEST);
 //        }
-//    }
+
+        try {
+            if (accountDTOs.size() == 1) {
+                // Single account: use addAccount for efficiency
+                AccountDTO accountDTO = accountDTOs.get(0);
+                System.out.println(accountDTO);
+                AccountDTO createdAccount = accountservice.createAccount(accountDTO);
+                return new ResponseEntity<>("createdAccount", HttpStatus.CREATED);
+            } else {
+                // Multiple accounts: use asynchronous processing for scalability
+                executorService.execute(() -> accountservice.createAccounts(accountDTOs));
+                return new ResponseEntity<>("Accounts created asynchronously...", HttpStatus.ACCEPTED);
+            }
+        } catch (Exception e) {
+            // Handle exceptions gracefully
+            return new ResponseEntity<>("Error processing accounts: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 
@@ -57,11 +57,11 @@ public class AccountController {
 //        return new ResponseEntity<>(accountservice.createAccount(accountDTO), HttpStatus.CREATED);
 //    }
 
-    @PostMapping("/listaccounts")
-    public ResponseEntity<List<AccountDTO>> addAccounts(@RequestBody List<AccountDTO> accountDTOs) {
-        List<AccountDTO> createdAccounts = accountservice.createAccounts(accountDTOs);
-        return new ResponseEntity<>(createdAccounts, HttpStatus.CREATED);
-    }
+//    @PostMapping("/listaccounts")
+//    public ResponseEntity<List<AccountDTO>> addAccounts(@RequestBody List<AccountDTO> accountDTOs) {
+//        List<AccountDTO> createdAccounts = accountservice.createAccounts(accountDTOs);
+//        return new ResponseEntity<>(createdAccounts, HttpStatus.CREATED);
+//    }
 
 //    @PostMapping("/listaccounts")
 //    public ResponseEntity<String> addAccounts(@RequestBody List<AccountDTO> accountDTOs) {
