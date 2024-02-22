@@ -57,21 +57,21 @@ public class AccountController {
 //        return new ResponseEntity<>(accountservice.createAccount(accountDTO), HttpStatus.CREATED);
 //    }
 
-//    @PostMapping("/listaccounts")
-//    public ResponseEntity<List<AccountDTO>> addAccounts(@RequestBody List<AccountDTO> accountDTOs) {
-//        List<AccountDTO> createdAccounts = accountservice.createAccounts(accountDTOs);
-//        return new ResponseEntity<>(createdAccounts, HttpStatus.CREATED);
-//    }
-
     @PostMapping("/listaccounts")
-    public ResponseEntity<String> addAccounts(@RequestBody List<AccountDTO> accountDTOs) {
-        try {
-            executorService.execute(() -> accountservice.createAccounts(accountDTOs));
-            return new ResponseEntity<>(" accounts created...", HttpStatus.ACCEPTED);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Error processing accounts: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<List<AccountDTO>> addAccounts(@RequestBody List<AccountDTO> accountDTOs) {
+        List<AccountDTO> createdAccounts = accountservice.createAccounts(accountDTOs);
+        return new ResponseEntity<>(createdAccounts, HttpStatus.CREATED);
     }
+
+//    @PostMapping("/listaccounts")
+//    public ResponseEntity<String> addAccounts(@RequestBody List<AccountDTO> accountDTOs) {
+//        try {
+//            executorService.execute(() -> accountservice.createAccounts(accountDTOs));
+//            return new ResponseEntity<>(" accounts created...", HttpStatus.ACCEPTED);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>("Error processing accounts: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
 //@PostMapping("/listaccounts")
 //public ResponseEntity<List<AccountDTO>> addAccounts(@RequestBody List<AccountDTO> accountDTOs) throws ExecutionException, InterruptedException {
@@ -107,11 +107,17 @@ public class AccountController {
         return ResponseEntity.ok(accountDTO);
     }
 
-    @GetMapping
-    public ResponseEntity<List<AccountDTO>> getallAccounts(){
-        List<AccountDTO> accounts = accountservice.getallAccounts();
-        return ResponseEntity.ok(accounts);
-    }
+//    @GetMapping
+//    public ResponseEntity<List<AccountDTO>> getallAccounts() throws InterruptedException {
+//        List<AccountDTO> accounts = accountservice.getallAccounts();
+//        return ResponseEntity.ok(accounts);
+//    }
+@GetMapping
+public CompletableFuture<ResponseEntity<List<AccountDTO>>> getallAccounts() {
+    return accountservice.getallAccountsAsync()
+            .thenApply(ResponseEntity::ok)
+            .exceptionally(ex -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+}
     @GetMapping("/sortByString/{field}")
     public ResponseEntity<List<Account>> sortByString(@PathVariable String field){
         List<Account> accounts = accountservice.sortByString(field);

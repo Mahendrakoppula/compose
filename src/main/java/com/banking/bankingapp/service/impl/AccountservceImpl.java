@@ -8,11 +8,12 @@ import com.banking.bankingapp.service.Accountservice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,11 +85,40 @@ public class AccountservceImpl implements Accountservice {
         return AccountMapper.mapToAccountDTO(savedAccount);
     }
 
+//    @Override
+//    public List<AccountDTO> getallAccounts() {
+//        List<Account>allaccounts=accountRepository.findAll();
+//        return allaccounts.stream().map((account)->AccountMapper.mapToAccountDTO(account))
+//               .collect(Collectors.toList());
+//    }
+
+    public List<AccountDTO> getallAccounts() throws InterruptedException {
+        List<AccountDTO> accountDTOs = new CopyOnWriteArrayList<>();
+        ExecutorService executor = Executors.newFixedThreadPool(10); // Adjust the pool size as per your requirement
+
+        List<Account> allAccounts = accountRepository.findAll();
+        CountDownLatch latch = new CountDownLatch(allAccounts.size());
+
+        for (Account account : allAccounts) {
+            executor.submit(() -> {
+                AccountDTO accountDTO = AccountMapper.mapToAccountDTO(account);
+                accountDTOs.add(accountDTO);
+                latch.countDown();
+            });
+        }
+
+        latch.await(); // Wait for all tasks to finish
+        executor.shutdown();
+
+        return accountDTOs;
+    }
+    @Async
     @Override
-    public List<AccountDTO> getallAccounts() {
-        List<Account>allaccounts=accountRepository.findAll();
-        return allaccounts.stream().map((account)->AccountMapper.mapToAccountDTO(account))
-               .collect(Collectors.toList());
+    public CompletableFuture<List<AccountDTO>> getallAccountsAsync() {
+        List<Account> allAccounts = accountRepository.findAll();
+        return CompletableFuture.completedFuture(allAccounts.stream()
+                .map(AccountMapper::mapToAccountDTO)
+                .collect(Collectors.toList()));
     }
 
     @Override

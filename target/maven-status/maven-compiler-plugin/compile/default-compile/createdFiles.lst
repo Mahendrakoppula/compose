@@ -1,8 +1,0 @@
-com\banking\bankingapp\service\Accountservice.class
-com\banking\bankingapp\BankingappApplication.class
-com\banking\bankingapp\service\impl\AccountservceImpl.class
-com\banking\bankingapp\controller\AccountController.class
-com\banking\bankingapp\mapper\AccountMapper.class
-com\banking\bankingapp\entity\Account.class
-com\banking\bankingapp\repository\AccountRepository.class
-com\banking\bankingapp\DTO\AccountDTO.class
