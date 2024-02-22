@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -29,28 +30,28 @@ public class AccountservceImpl implements Accountservice {
         return AccountMapper.mapToAccountDTO(savedAccount);
     }
 
-//    public List<AccountDTO> createAccounts(List<AccountDTO> accountDTOs) {
-//        List<AccountDTO> createdAccountDTOs = new ArrayList<>();
-//        for (AccountDTO accountDTO : accountDTOs) {
-//            Account account = AccountMapper.mapToAccount(accountDTO);
-//            Account savedAccount = accountRepository.save(account);
-//            createdAccountDTOs.add(AccountMapper.mapToAccountDTO(savedAccount));
-//        }
-//        return createdAccountDTOs;
-//    }
-public List<AccountDTO> createAccounts(List<AccountDTO> accountDTOs) {
-    List<CompletableFuture<AccountDTO>> futures = accountDTOs.stream()
-            .map(accountDTO -> CompletableFuture.supplyAsync(() -> createAccount(accountDTO)))
-            .collect(Collectors.toList());
-
-    CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-
-    return allFutures.thenApplyAsync(
-            v -> futures.stream()
-                    .map(CompletableFuture::join)
-                    .collect(Collectors.toList())
-    ).join();
-}
+    public List<AccountDTO> createAccounts(List<AccountDTO> accountDTOs) {
+        List<AccountDTO> createdAccountDTOs = new ArrayList<>();
+        for (AccountDTO accountDTO : accountDTOs) {
+            Account account = AccountMapper.mapToAccount(accountDTO);
+            Account savedAccount = accountRepository.save(account);
+            createdAccountDTOs.add(AccountMapper.mapToAccountDTO(savedAccount));
+        }
+        return createdAccountDTOs;
+    }
+//public List<AccountDTO> createAccounts(List<AccountDTO> accountDTOs) {
+//    List<CompletableFuture<AccountDTO>> futures = accountDTOs.stream()
+//            .map(accountDTO -> CompletableFuture.supplyAsync(() -> createAccount(accountDTO)))
+//            .collect(Collectors.toList());
+//
+//    CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+//
+//    return allFutures.thenApplyAsync(
+//            v -> futures.stream()
+//                    .map(CompletableFuture::join)
+//                    .collect(Collectors.toList())
+//    ).join();
+//}
 
 
 
