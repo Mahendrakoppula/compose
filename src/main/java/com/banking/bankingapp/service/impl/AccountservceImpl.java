@@ -5,9 +5,13 @@ import com.banking.bankingapp.entity.Account;
 import com.banking.bankingapp.mapper.AccountMapper;
 import com.banking.bankingapp.repository.AccountRepository;
 import com.banking.bankingapp.service.Accountservice;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,12 +22,37 @@ public class AccountservceImpl implements Accountservice {
     public AccountservceImpl(AccountRepository accountRepository){
         this.accountRepository= accountRepository;
     }
-    @Override
+
     public AccountDTO createAccount(AccountDTO accountDTO) {
         Account account = AccountMapper.mapToAccount(accountDTO);
         Account savedAccount = accountRepository.save(account);
         return AccountMapper.mapToAccountDTO(savedAccount);
     }
+
+//    public List<AccountDTO> createAccounts(List<AccountDTO> accountDTOs) {
+//        List<AccountDTO> createdAccountDTOs = new ArrayList<>();
+//        for (AccountDTO accountDTO : accountDTOs) {
+//            Account account = AccountMapper.mapToAccount(accountDTO);
+//            Account savedAccount = accountRepository.save(account);
+//            createdAccountDTOs.add(AccountMapper.mapToAccountDTO(savedAccount));
+//        }
+//        return createdAccountDTOs;
+//    }
+public List<AccountDTO> createAccounts(List<AccountDTO> accountDTOs) {
+    List<CompletableFuture<AccountDTO>> futures = accountDTOs.stream()
+            .map(accountDTO -> CompletableFuture.supplyAsync(() -> createAccount(accountDTO)))
+            .collect(Collectors.toList());
+
+    CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+    return allFutures.thenApplyAsync(
+            v -> futures.stream()
+                    .map(CompletableFuture::join)
+                    .collect(Collectors.toList())
+    ).join();
+}
+
+
 
     @Override
     public AccountDTO getAccountById(long id) {
@@ -59,5 +88,27 @@ public class AccountservceImpl implements Accountservice {
         List<Account>allaccounts=accountRepository.findAll();
         return allaccounts.stream().map((account)->AccountMapper.mapToAccountDTO(account))
                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Account> sortByString(String field) {
+        return accountRepository.findAll(Sort.by(Sort.Direction.ASC,field));
+    }
+
+    @Override
+    public Page<Account> withpagination(int offset, int pageSize) {
+        return accountRepository.findAll(PageRequest.of(offset,pageSize));
+    }
+
+    @Override
+    public Page<Account> PaginationwithSorting(int offset, int pageSize, String field) {
+        return accountRepository.findAll(PageRequest.of(offset,pageSize).withSort(Sort.by(Sort.Direction.ASC,field)));
+    }
+
+    public List<AccountDTO> findAccountsWithBalanceInRange(double minBalance, double maxBalance) {
+
+        List<Account>allaccounts=accountRepository.findByBalanceBetween(minBalance, maxBalance);
+        return allaccounts.stream().map((account)->AccountMapper.mapToAccountDTO(account))
+                .collect(Collectors.toList());
     }
 }
